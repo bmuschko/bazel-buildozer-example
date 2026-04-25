@@ -1,0 +1,51 @@
+name: Buildozer Demo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  buildozer-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bazel
+        uses: bazelbuild/setup-bazelisk@v3
+
+      - name: Install buildozer
+        run: |
+          curl -fL -o /usr/local/bin/buildozer \
+            https://github.com/bazelbuild/buildtools/releases/download/v8.5.1/buildozer-linux-amd64
+          chmod +x /usr/local/bin/buildozer
+
+      - name: Build project
+        run: bazel build //...
+
+      - name: "Demo: Print all target names and rule types"
+        run: buildozer 'print name kind' //src:all
+
+      - name: "Demo: Add a tag to the lib target"
+        run: buildozer 'add tags no-remote-cache' //src:lib
+
+      - name: "Demo: Set testonly on the sources target"
+        run: buildozer 'set testonly True' //src:sources
+
+      - name: "Demo: Add a new dependency"
+        run: buildozer 'add deps //utils:helpers' //src:lib
+
+      - name: "Demo: Remove the dependency we just added"
+        run: buildozer 'remove deps //utils:helpers' //src:lib
+
+      - name: "Demo: Show the diff after modifications"
+        run: git diff src/BUILD.bazel
+
+      - name: "Demo: Add a new rule to the BUILD file"
+        run: |
+          buildozer 'new filegroup assets' //src:__pkg__
+          buildozer 'add srcs README.md' //src:assets
+
+      - name: "Demo: Print the final BUILD file"
+        run: cat src/BUILD.bazel

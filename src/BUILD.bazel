@@ -1,0 +1,16 @@
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+
+package(default_visibility = ["//visibility:public"])
+
+ts_project(
+    name = "lib",
+    srcs = glob(["*.ts"]),
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "tsconfig.json",
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.ts"]),
+)
